@@ -1,5 +1,5 @@
 from django.http import HttpResponse, HttpResponseNotFound, Http404,HttpResponseForbidden,HttpResponseBadRequest,HttpResponseServerError
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 
 from .models import *
 
@@ -13,10 +13,8 @@ menu=[
 
 def index(request):
     posts=Games.objects.all()
-    cats=Category.objects.all()
 
     context={
-        'cats':cats,
         'posts':posts,
         'menu':menu,
         'title': 'Главная страница',
@@ -34,17 +32,22 @@ def contact(request):
     return HttpResponse("Обратная связь")
 
 def show_post(request,post_id):
-    return HttpResponse(f"Отображение статьи с id={post_id}")
+    post=get_object_or_404(Games,pk=post_id)
+    context={
+        'post':post,
+        'menu':menu,
+        'title':post.title,
+        'cat_selected':post.cat_id,
+    }
 
+    return render(request,'games/post.html',context=context)
 def show_category(request,cat_id):
     posts = Games.objects.filter(cat_id=cat_id)
-    cats = Category.objects.all()
 
     if len(posts)==0:
         raise Http404()
 
     context = {
-        'cats': cats,
         'posts': posts,
         'menu': menu,
         'title': 'Главная страница',
