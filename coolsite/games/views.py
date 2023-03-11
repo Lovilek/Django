@@ -1,6 +1,7 @@
 from django.http import HttpResponse, HttpResponseNotFound, Http404,HttpResponseForbidden,HttpResponseBadRequest,HttpResponseServerError
 from django.shortcuts import render, redirect, get_object_or_404
 
+from .form import *
 from .models import *
 
 menu=[
@@ -26,13 +27,23 @@ def about(request):
     return render(request, 'games/about.html',{'title': 'About','menu':menu})
 
 def addpage(request):
-    return HttpResponse("Добавление игры")
+    if request.method=='POST':
+        form=AddPostForm(request.POST)
+        if form.is_valid():
+            try:
+                Games.objects.create(**form.cleaned_data)
+                return  redirect('home')
+            except:
+                form.add_error(None,'Ошибка')
+    else:
+        form=AddPostForm()
+    return render(request,'games/addpage.html',{'form':form,'menu':menu,'title':'Добавление статьи'})
 
 def contact(request):
     return HttpResponse("Обратная связь")
 
-def show_post(request,post_id):
-    post=get_object_or_404(Games,pk=post_id)
+def show_post(request,post_slug):
+    post=get_object_or_404(Games,slug=post_slug)
     context={
         'post':post,
         'menu':menu,
